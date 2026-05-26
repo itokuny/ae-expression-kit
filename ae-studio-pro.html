@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AE Studio Pro — Motion Expression Engine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800;900&family=Syne+Mono&family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:        #080a0d;
+  --surface:   #0e1117;
+  --surface2:  #141820;
+  --border:    rgba(255,255,255,0.06);
+  --border-hi: rgba(255,255,255,0.14);
+  --accent:    #c8f135;
+  --accent2:   #3dffd0;
+  --accent3:   #ff4d6d;
+  --text:      #e8eaf0;
+  --text-dim:  #5a6070;
+  --text-mid:  #8a909e;
+  --code-col:  #c8f135;
+  --radius-lg: 20px;
+  --radius-md: 12px;
+  --radius-sm: 8px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg); color: var(--text);
+  font-family: 'Noto Sans JP', sans-serif;
+  min-height: 100vh; overflow-x: hidden; position: relative;
+}
+body::before {
+  content: ''; position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.025; pointer-events: none; z-index: 9999;
+}
+body::after {
+  content: ''; position: fixed;
+  width: 800px; height: 800px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(200,241,53,0.035) 0%, transparent 70%);
+  top: -300px; right: -200px; pointer-events: none;
+}
+.app-shell { max-width: 1320px; margin: 0 auto; padding: 0 2rem 4rem; }
+
+/* Header */
+.app-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 2rem 0 2.5rem; border-bottom: 1px solid var(--border); margin-bottom: 2.5rem;
+}
+.logo { display: flex; align-items: baseline; gap: 0.7rem; }
+.logo-mark { font-family: 'Syne', sans-serif; font-weight: 900; font-size: 1.55rem; letter-spacing: -0.04em; color: var(--text); }
+.logo-mark span { color: var(--accent); }
+.logo-sub { font-family: 'Syne Mono', monospace; font-size: 0.62rem; color: var(--text-dim); letter-spacing: 0.14em; text-transform: uppercase; border: 1px solid var(--border-hi); padding: 0.18rem 0.55rem; border-radius: 4px; }
+.header-status { display: flex; align-items: center; gap: 0.45rem; font-family: 'Syne Mono', monospace; font-size: 0.68rem; color: var(--text-dim); }
+.status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 8px var(--accent); animation: pdot 2.4s ease-in-out infinite; }
+@keyframes pdot { 0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.4;transform:scale(0.75);} }
+
+/* Grid */
+.main-grid { display: grid; grid-template-columns: 340px 1fr; gap: 1.5rem; align-items: start; }
+
+/* Panel */
+.panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; position: relative; animation: fadeup 0.55s cubic-bezier(0.22,1,0.36,1) both; }
+.panel::before { content: ''; position: absolute; top:0;left:0;right:0;height:1px; background: linear-gradient(90deg,transparent,var(--border-hi),transparent); }
+@keyframes fadeup { from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:translateY(0);} }
+.preview-panel { animation-delay: 0.07s; }
+.code-panel    { animation-delay: 0.13s; }
+.panel-header { display: flex; align-items: center; justify-content: space-between; padding: 1.1rem 1.4rem; border-bottom: 1px solid var(--border); }
+.panel-title { font-family: 'Syne', sans-serif; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-dim); }
+.panel-badge { font-family: 'Syne Mono', monospace; font-size: 0.58rem; color: var(--accent); background: rgba(200,241,53,0.08); border: 1px solid rgba(200,241,53,0.2); padding: 0.14rem 0.5rem; border-radius: 4px; letter-spacing: 0.08em; }
+.panel-body { padding: 1.4rem; }
+.section { margin-bottom: 1.8rem; }
+.section:last-child { margin-bottom: 0; }
+.section-label { font-family: 'Syne Mono', monospace; font-size: 0.6rem; letter-spacing: 0.18em; color: var(--text-dim); text-transform: uppercase; margin-bottom: 0.9rem; display: flex; align-items: center; gap: 0.6rem; }
+.section-label::after { content:''; flex:1; height:1px; background:var(--border); }
+
+/* Presets */
+.preset-cat { font-family: 'Syne Mono', monospace; font-size: 0.57rem; color: var(--text-dim); letter-spacing: 0.2em; text-transform: uppercase; margin: 0.75rem 0 0.45rem; }
+.preset-cat:first-child { margin-top: 0; }
+.preset-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.38rem; }
+.preset-chip { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.5rem 0.2rem 0.45rem; font-family: 'Syne', sans-serif; font-size: 0.65rem; font-weight: 700; color: var(--text-mid); cursor: pointer; text-align: center; transition: all 0.14s; letter-spacing: 0.02em; line-height: 1.3; }
+.preset-chip:hover { border-color: var(--border-hi); color: var(--text); background: rgba(255,255,255,0.04); }
+.preset-chip.active { background: rgba(200,241,53,0.08); border-color: rgba(200,241,53,0.35); color: var(--accent); }
+.chip-icon { display:block; font-size:0.95rem; margin-bottom:0.18rem; line-height:1; }
+
+/* Sliders */
+.divider { height:1px; background:var(--border); margin: 1.4rem 0; }
+.slider-group { margin-bottom: 1.15rem; }
+.slider-group:last-child { margin-bottom: 0; }
+.slider-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.55rem; }
+.slider-label { font-family: 'Syne', sans-serif; font-size: 0.7rem; font-weight: 700; color: var(--text-mid); letter-spacing: 0.04em; }
+.slider-value { font-family: 'Syne Mono', monospace; font-size: 0.66rem; color: var(--accent); background: rgba(200,241,53,0.06); padding: 0.1rem 0.4rem; border-radius: 4px; min-width: 3.2rem; text-align: center; }
+input[type=range] { -webkit-appearance: none; width: 100%; height: 2px; background: var(--surface2); border-radius: 2px; outline: none; border: none; }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 15px; height: 15px; background: var(--text); border-radius: 50%; cursor: pointer; border: 2px solid var(--bg); box-shadow: 0 0 0 1px var(--border-hi); transition: transform 0.15s, background 0.15s; }
+input[type=range]::-webkit-slider-thumb:hover { background: var(--accent); transform: scale(1.25); }
+
+/* Right column */
+.right-col { display: flex; flex-direction: column; gap: 1.5rem; }
+
+/* Preview panel */
+.preview-panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; position: relative; }
+.preview-panel::before { content:''; position:absolute;top:0;left:0;right:0;height:1px; background: linear-gradient(90deg,transparent,var(--border-hi),transparent); }
+.preview-stage { height: 280px; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.preview-stage::before { content:''; position:absolute;inset:0; background-image: linear-gradient(rgba(255,255,255,0.022) 1px,transparent 1px), linear-gradient(90deg,rgba(255,255,255,0.022) 1px,transparent 1px); background-size: 32px 32px; }
+.preview-cross { position:absolute;inset:0;pointer-events:none; }
+.preview-cross::before { content:'';position:absolute;left:50%;top:calc(50% - 18px);width:1px;height:36px;background:rgba(255,255,255,0.07);transform:translateX(-50%); }
+.preview-cross::after { content:'';position:absolute;top:50%;left:calc(50% - 18px);width:36px;height:1px;background:rgba(255,255,255,0.07);transform:translateY(-50%); }
+
+/* Preview object — base size = 100px (= 100% scale in AE) */
+#preview-target {
+  width: 100px; height: 100px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, #1a1f2e, #222840);
+  border: 1px solid rgba(255,255,255,0.1);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2rem; position: relative; z-index: 10;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06);
+  will-change: transform;
+}
+
+
+.preview-footer { padding: 0.75rem 1.3rem; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.preview-mode-label { font-family: 'Syne Mono', monospace; font-size: 0.6rem; color: var(--text-dim); letter-spacing: 0.1em; }
+
+/* Property type tag */
+.preview-right-meta { display: flex; align-items: center; gap: 0.5rem; }
+.preview-active-tag { font-family: 'Syne Mono', monospace; font-size: 0.6rem; color: var(--accent2); background: rgba(61,255,208,0.07); border: 1px solid rgba(61,255,208,0.2); padding: 0.13rem 0.5rem; border-radius: 4px; }
+.prop-type-tag { font-family: 'Syne Mono', monospace; font-size: 0.6rem; padding: 0.13rem 0.5rem; border-radius: 4px; }
+.prop-type-tag.pos  { color: #c8f135; background: rgba(200,241,53,0.07);  border: 1px solid rgba(200,241,53,0.2); }
+.prop-type-tag.rot  { color: #3dffd0; background: rgba(61,255,208,0.07);  border: 1px solid rgba(61,255,208,0.2); }
+.prop-type-tag.scl  { color: #b8a4ff; background: rgba(184,164,255,0.07); border: 1px solid rgba(184,164,255,0.2); }
+.prop-type-tag.opc  { color: #ff9f6b; background: rgba(255,159,107,0.07); border: 1px solid rgba(255,159,107,0.2); }
+
+/* Code panel */
+.code-panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; position: relative; }
+.code-panel::before { content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--border-hi),transparent); }
+.code-header { display: flex; align-items: center; justify-content: space-between; padding: 0.85rem 1.2rem; border-bottom: 1px solid var(--border); background: var(--surface2); }
+.code-title { font-family: 'Syne Mono', monospace; font-size: 0.63rem; color: var(--text-dim); letter-spacing: 0.08em; display: flex; align-items: center; gap: 0.5rem; }
+.code-title::before { content:'';display:inline-block;width:7px;height:7px;border-radius:50%;background:rgba(200,241,53,0.5);box-shadow:0 0 6px rgba(200,241,53,0.4); }
+.btn-copy { display: flex; align-items: center; gap: 0.4rem; background: transparent; border: 1px solid var(--border-hi); border-radius: var(--radius-sm); padding: 0.32rem 0.75rem; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.65rem; color: var(--text-mid); cursor: pointer; letter-spacing: 0.04em; transition: all 0.15s; }
+.btn-copy:hover { background: var(--surface2); border-color: rgba(200,241,53,0.4); color: var(--accent); }
+#code-output { width: 100%; height: 160px; background: transparent; border: none; padding: 1.2rem 1.4rem; font-family: 'Syne Mono', monospace; font-size: 0.78rem; color: var(--code-col); line-height: 1.75; resize: none; outline: none; opacity: 0.88; }
+
+/* Toast */
+.toast { position: fixed; bottom: 2.5rem; left: 50%; transform: translateX(-50%) translateY(16px); background: var(--surface2); border: 1px solid var(--border-hi); color: var(--accent); padding: 0.6rem 1.4rem; border-radius: 100px; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.75rem; letter-spacing: 0.04em; box-shadow: 0 8px 32px rgba(0,0,0,0.45); opacity: 0; transition: all 0.32s cubic-bezier(0.34,1.56,0.64,1); pointer-events: none; z-index: 100; }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-hi); border-radius: 2px; }
+
+
+/* ── Live value indicator in preview ── */
+.live-value {
+  position: absolute;
+  top: 10px; left: 12px;
+  font-family: 'Syne Mono', monospace;
+  font-size: 0.62rem;
+  color: var(--text-mid);
+  letter-spacing: 0.04em;
+  pointer-events: none;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.live-value-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.live-value-key {
+  font-size: 0.54rem;
+  color: var(--text-dim);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  min-width: 18px;
+}
+.live-value-num {
+  color: var(--accent);
+  background: rgba(200,241,53,0.08);
+  border: 1px solid rgba(200,241,53,0.18);
+  padding: 0.05rem 0.4rem;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  min-width: 5.5rem;
+  text-align: right;
+}
+/* コード不変の注記 */
+.no-code-effect {
+  position: absolute;
+  bottom: 10px; left: 12px;
+  font-family: 'Syne Mono', monospace;
+  font-size: 0.54rem;
+  color: var(--text-dim);
+  letter-spacing: 0.06em;
+  pointer-events: none;
+  z-index: 20;
+}
+</style>
+</head>
+<body>
+
+<div id="toast" class="toast">Copied ✦</div>
+
+<div class="app-shell">
+  <header class="app-header">
+    <div class="logo">
+      <div class="logo-mark">AE <span>Studio</span></div>
+      <div class="logo-sub">Pro 2026</div>
+    </div>
+    <div class="header-status">
+      <div class="status-dot"></div>
+      Motion Expression Engine
+      &nbsp;&nbsp;
+      <span style="font-family:'Syne Mono',monospace;font-size:0.6rem;color:var(--text-dim);letter-spacing:0.08em;border-left:1px solid var(--border-hi);padding-left:0.8rem;margin-left:0.2rem;">
+        Created by <a href="https://x.com/itokuniapp_" target="_blank" style="color:var(--accent);text-decoration:none;font-weight:700;letter-spacing:0.04em;">itokuni</a>
+      </span>
+    </div>
+  </header>
+
+  <div class="main-grid">
+
+    <!-- Left Panel -->
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Controls</span>
+        <span class="panel-badge">Preset</span>
+      </div>
+      <div class="panel-body">
+
+        <div class="section">
+          <div class="section-label">Presets</div>
+
+          <div class="preset-cat">Position</div>
+          <div class="preset-row">
+            <button class="preset-chip" data-key="wiggle"><span class="chip-icon">🌊</span>Wiggle</button>
+            <button class="preset-chip" data-key="float"><span class="chip-icon">🎈</span>Float</button>
+            <button class="preset-chip" data-key="shake"><span class="chip-icon">⚡</span>Shake</button>
+            <button class="preset-chip" data-key="pendulum"><span class="chip-icon">🕰</span>Pendulum</button>
+          </div>
+
+          <div class="preset-cat">Rotation</div>
+          <div class="preset-row">
+            <button class="preset-chip" data-key="spin"><span class="chip-icon">🌀</span>Spin</button>
+            <button class="preset-chip" data-key="wobble"><span class="chip-icon">〰</span>Wobble</button>
+            <button class="preset-chip" data-key="tick"><span class="chip-icon">⏱</span>Tick</button>
+            <button class="preset-chip" data-key="swing"><span class="chip-icon">🎪</span>Swing</button>
+          </div>
+
+          <div class="preset-cat">Scale</div>
+          <div class="preset-row">
+            <button class="preset-chip" data-key="breathe"><span class="chip-icon">💓</span>Breathe</button>
+            <button class="preset-chip" data-key="pulse"><span class="chip-icon">📡</span>Pulse</button>
+            <button class="preset-chip" data-key="bounce"><span class="chip-icon">●</span>Bounce</button>
+            <button class="preset-chip" data-key="pop"><span class="chip-icon">✦</span>Pop</button>
+          </div>
+
+          <div class="preset-cat">Opacity</div>
+          <div class="preset-row" style="grid-template-columns: repeat(2,1fr); max-width:50%;">
+            <button class="preset-chip" data-key="blink"><span class="chip-icon">✨</span>Blink</button>
+            <button class="preset-chip" data-key="flicker"><span class="chip-icon">🕯</span>Flicker</button>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="section">
+          <div class="section-label">Fine Tune</div>
+          <div class="slider-group">
+            <div class="slider-header">
+              <span class="slider-label">Speed</span>
+              <span class="slider-value" id="val-speed">1.0×</span>
+            </div>
+            <input type="range" id="range-speed" min="0.1" max="5.0" step="0.1" value="1.0">
+          </div>
+          <div class="slider-group">
+            <div class="slider-header">
+              <span class="slider-label">Intensity（強度）</span>
+              <span class="slider-value" id="val-intensity">50</span>
+            </div>
+            <input type="range" id="range-intensity" min="0" max="200" step="1" value="50">
+          </div>
+          <div class="slider-group">
+            <div class="slider-header">
+              <span class="slider-label">Easing（緩急）</span>
+              <span class="slider-value" id="val-ease">Smooth</span>
+            </div>
+            <input type="range" id="range-ease" min="1" max="10" step="1" value="2">
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="section">
+          <div class="section-label">Preview Object Size</div>
+          <div class="slider-group" id="size-slider-group">
+            <div class="slider-header">
+              <span class="slider-label">Object Size</span>
+              <span class="slider-value" id="val-obj-size">100 px</span>
+            </div>
+            <input type="range" id="range-obj-size" min="20" max="240" step="4" value="100">
+          </div>
+          <p style="font-family:'Syne Mono',monospace;font-size:0.56rem;color:var(--text-dim);letter-spacing:0.07em;margin-top:0.6rem;line-height:1.6;">
+            ※ プレビューの見た目サイズのみ変更<br>コードには影響しません
+          </p>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Right Column -->
+    <div class="right-col">
+
+      <div class="preview-panel">
+        <div class="preview-stage">
+          <div class="preview-cross"></div>
+          <div id="preview-target">◆</div>
+          <!-- リアルタイム値インジケーター -->
+          <div class="live-value" id="live-value-box">
+            <!-- JSで動的生成 -->
+          </div>
+          <div class="no-code-effect" id="no-code-note">
+            SIZE PREVIEW ONLY — CODE UNCHANGED
+          </div>
+        </div>
+        <div class="preview-footer">
+          <span class="preview-mode-label">LIVE PREVIEW — AE accurate</span>
+          <div class="preview-right-meta">
+            <span class="prop-type-tag" id="prop-type-tag">—</span>
+            <span class="preview-active-tag" id="active-preset-tag">—</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="code-panel">
+        <div class="code-header">
+          <span class="code-title">expression.jsx</span>
+          <button id="btn-copy" class="btn-copy">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+              <rect x="8" y="2" width="8" height="4" rx="1"/>
+            </svg>
+            Copy to AE
+          </button>
+        </div>
+        <textarea id="code-output" spellcheck="false" readonly></textarea>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const codeOutput    = document.getElementById('code-output');
+  const previewTarget = document.getElementById('preview-target');
+  const btnCopy       = document.getElementById('btn-copy');
+  const toast         = document.getElementById('toast');
+  const activeTag     = document.getElementById('active-preset-tag');
+  const propTypeTag   = document.getElementById('prop-type-tag');
+  const liveValueBox  = document.getElementById('live-value-box');
+  const rObjSize      = document.getElementById('range-obj-size');
+  const vObjSize      = document.getElementById('val-obj-size');
+
+  const rSpeed     = document.getElementById('range-speed');
+  const rIntensity = document.getElementById('range-intensity');
+  const rEase      = document.getElementById('range-ease');
+  const vSpeed     = document.getElementById('val-speed');
+  const vIntensity = document.getElementById('val-intensity');
+  const vEase      = document.getElementById('val-ease');
+
+  const EASE_LABELS = ['','Linear','Smooth','EaseIn','EaseOut','Spring','Bounce','Elastic','Sharp','Wobbly','Crazy'];
+
+  // ─────────────────────────────────────────────────────────────
+  // PRESETS
+  // prop: 'pos'|'rot'|'scl'|'opc' — AEで貼るべきプロパティ
+  // propLabel: UIに表示するテキスト
+  // expr: AEに貼るコード本体（spd/amt/eas変数を使う）
+  // ─────────────────────────────────────────────────────────────
+  const PRESETS = {
+    wiggle:   { prop:'pos', propLabel:'Position',
+      expr: `wiggle(spd * 2, amt);` },
+    float:    { prop:'pos', propLabel:'Position',
+      expr: `var f = spd * 1.5;\nvar y = Math.sin(time * f) * amt * 0.4;\n[value[0], value[1] + y];` },
+    shake:    { prop:'pos', propLabel:'Position',
+      expr: `var s = spd * 20;\nvar a = amt * 0.5;\n[value[0] + Math.sin(time * s * 1.1) * a, value[1] + Math.sin(time * s * 0.9) * a];` },
+    pendulum: { prop:'pos', propLabel:'Position',
+      expr: `var angle = Math.sin(time * spd * 2) * (amt * 0.01);\nvar len = amt * 2;\n[value[0] + Math.sin(angle) * len, value[1] + (1 - Math.cos(angle)) * len];` },
+    spin:     { prop:'rot', propLabel:'Rotation',
+      expr: `time * spd * 60 % 360;` },
+    wobble:   { prop:'rot', propLabel:'Rotation',
+      expr: `Math.sin(time * spd * 4) * amt * 0.2;` },
+    tick:     { prop:'rot', propLabel:'Rotation',
+      expr: `Math.floor(time * spd * 6) * (360 / (spd * 6 || 1) / 60) % 360;` },
+    swing:    { prop:'rot', propLabel:'Rotation',
+      expr: `Math.sin(time * spd * 2) * amt * 0.4 * Math.exp(-0.5 * (time % (1/spd)));` },
+    breathe:  { prop:'scl', propLabel:'Scale',
+      expr: `var s = 1 + Math.sin(time * spd * 1.5) * (amt * 0.003);\n[s * 100, s * 100];` },
+    pulse:    { prop:'scl', propLabel:'Scale',
+      expr: `var p = Math.abs(Math.sin(time * spd * 3));\nvar s = (1 + p * amt * 0.005) * 100;\n[s, s];` },
+    bounce:   { prop:'scl', propLabel:'Scale',
+      expr: `var b = Math.abs(Math.sin(time * spd * Math.PI * 2));\nvar s = (1 + b * amt * 0.004) * 100;\n[s, s];` },
+    pop:      { prop:'scl', propLabel:'Scale',
+      expr: `var t = time * spd % 1;\nvar s = t < 0.1 ? 1 + (t/0.1) * amt * 0.008 : 1 + (1 - (t - 0.1)/0.9) * amt * 0.003;\n[s*100, s*100];` },
+    blink:    { prop:'opc', propLabel:'Opacity',
+      expr: `Math.floor(time * spd * 2) % 2 === 0 ? 100 : 100 - amt * 0.4;` },
+    flicker:  { prop:'opc', propLabel:'Opacity',
+      expr: `var n = Math.sin(time * spd * 50) * Math.sin(time * spd * 17);\n100 - Math.abs(n) * amt * 0.4;` },
+  };
+
+  // ─────────────────────────────────────────────────────────────
+  // PREVIEW FUNCTIONS
+  // AEエクスプレッションと完全に同じ計算式でシミュレート
+  //
+  // 座標系の対応:
+  //   AE Position  → CSS translate (px)   ※プレビュー内は1px=1pxスケール
+  //   AE Rotation  → CSS rotate (deg)
+  //   AE Scale[%]  → CSS scale (scale/100)
+  //   AE Opacity % → CSS opacity (opacity/100)
+  //
+  // wiggle() はAE組み込み関数で完全再現不可のため、
+  // Perlin noise近似（複数sin合成）で最大限近づける
+  // ─────────────────────────────────────────────────────────────
+  function evalPreview(key, t, spd, amt, eas) {
+    // easは現在コード内に変数定義のみで式に直接使っていないため
+    // プレビューでも無視（コード出力には含まれる）
+    switch(key) {
+
+      // ── Position ──────────────────────────────────────────
+      case 'wiggle': {
+        // wiggle(freq, amp): Perlin noise近似
+        // 周波数 = spd*2, 振幅 = amt
+        const freq = spd * 2;
+        const amp  = amt;
+        // 複数の正弦波でPerlinに近似（seedをずらして独立したXY）
+        const tx = amp * (
+          0.50 * Math.sin(freq * t * 2 * Math.PI * 0.37 + 0.0) +
+          0.30 * Math.sin(freq * t * 2 * Math.PI * 0.87 + 1.3) +
+          0.12 * Math.sin(freq * t * 2 * Math.PI * 1.73 + 2.7) +
+          0.08 * Math.sin(freq * t * 2 * Math.PI * 3.11 + 0.9)
+        );
+        const ty = amp * (
+          0.50 * Math.sin(freq * t * 2 * Math.PI * 0.41 + 3.1) +
+          0.30 * Math.sin(freq * t * 2 * Math.PI * 0.93 + 0.7) +
+          0.12 * Math.sin(freq * t * 2 * Math.PI * 1.61 + 1.9) +
+          0.08 * Math.sin(freq * t * 2 * Math.PI * 2.97 + 4.2)
+        );
+        return { tx, ty };
+      }
+      case 'float': {
+        // var f = spd*1.5; var y = Math.sin(time*f)*amt*0.4;
+        const f = spd * 1.5;
+        const ty = Math.sin(t * f) * amt * 0.4;
+        return { ty };
+      }
+      case 'shake': {
+        // var s = spd*20; var a = amt*0.5;
+        // sin(time*s*1.1) / sin(time*s*0.9)
+        const s = spd * 20;
+        const a = amt * 0.5;
+        return { tx: Math.sin(t * s * 1.1) * a, ty: Math.sin(t * s * 0.9) * a };
+      }
+      case 'pendulum': {
+        // var angle = Math.sin(time*spd*2)*(amt*0.01);
+        // var len = amt*2;
+        // tx = sin(angle)*len, ty = (1-cos(angle))*len
+        const angle = Math.sin(t * spd * 2) * (amt * 0.01);
+        const len   = amt * 2;
+        return { tx: Math.sin(angle) * len, ty: (1 - Math.cos(angle)) * len };
+      }
+
+      // ── Rotation ──────────────────────────────────────────
+      case 'spin': {
+        // time * spd * 60 % 360
+        const rot = (t * spd * 60) % 360;
+        return { rot };
+      }
+      case 'wobble': {
+        // Math.sin(time*spd*4)*amt*0.2
+        const rot = Math.sin(t * spd * 4) * amt * 0.2;
+        return { rot };
+      }
+      case 'tick': {
+        // Math.floor(time*spd*6) * (360/(spd*6||1)/60) % 360
+        const stepsPerSec = spd * 6;
+        const degPerStep  = 360 / (stepsPerSec || 1) / 60;
+        const rot = (Math.floor(t * stepsPerSec) * degPerStep) % 360;
+        return { rot };
+      }
+      case 'swing': {
+        // Math.sin(time*spd*2)*amt*0.4 * Math.exp(-0.5*(time%(1/spd)))
+        const period  = 1 / (spd || 0.001);
+        const tInCyc  = t % period;
+        const rot = Math.sin(t * spd * 2) * amt * 0.4 * Math.exp(-0.5 * tInCyc);
+        return { rot };
+      }
+
+      // ── Scale ─────────────────────────────────────────────
+      // AE Scale は % なので /100 してCSS scaleへ変換
+      case 'breathe': {
+        // var s = 1 + Math.sin(time*spd*1.5)*(amt*0.003);
+        const s = 1 + Math.sin(t * spd * 1.5) * (amt * 0.003);
+        return { scale: s };   // AEの [s*100,s*100] → CSS scale = s
+      }
+      case 'pulse': {
+        // var p = Math.abs(Math.sin(time*spd*3));
+        // var s = (1 + p*amt*0.005)*100;
+        const p = Math.abs(Math.sin(t * spd * 3));
+        const s = 1 + p * amt * 0.005;
+        return { scale: s };
+      }
+      case 'bounce': {
+        // var b = Math.abs(Math.sin(time*spd*Math.PI*2));
+        // var s = (1 + b*amt*0.004)*100;
+        const b = Math.abs(Math.sin(t * spd * Math.PI * 2));
+        const s = 1 + b * amt * 0.004;
+        return { scale: s };
+      }
+      case 'pop': {
+        // var t2 = time*spd % 1;
+        // s = t2<0.1 ? 1+(t2/0.1)*amt*0.008 : 1+(1-(t2-0.1)/0.9)*amt*0.003
+        const t2 = (t * spd) % 1;
+        const s  = t2 < 0.1
+          ? 1 + (t2 / 0.1) * amt * 0.008
+          : 1 + (1 - (t2 - 0.1) / 0.9) * amt * 0.003;
+        return { scale: s };
+      }
+
+      // ── Opacity ───────────────────────────────────────────
+      // AE Opacity は 0〜100 → CSS opacity = val/100
+      case 'blink': {
+        // Math.floor(time*spd*2)%2===0 ? 100 : 100-amt*0.4
+        const aeOp = Math.floor(t * spd * 2) % 2 === 0 ? 100 : 100 - amt * 0.4;
+        return { opacity: Math.max(0, aeOp) / 100 };
+      }
+      case 'flicker': {
+        // var n = Math.sin(time*spd*50)*Math.sin(time*spd*17);
+        // 100 - Math.abs(n)*amt*0.4
+        const n    = Math.sin(t * spd * 50) * Math.sin(t * spd * 17);
+        const aeOp = 100 - Math.abs(n) * amt * 0.4;
+        return { opacity: Math.max(0, aeOp) / 100 };
+      }
+
+      default:
+        return {};
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // STATE
+  // ─────────────────────────────────────────────────────────────
+  let currentKey  = null;
+  let animFrameId = null;
+  let startTime   = Date.now();
+
+  // ─────────────────────────────────────────────────────────────
+  // UI UPDATE HELPERS
+  // ─────────────────────────────────────────────────────────────
+  function getObjSize() { return parseInt(rObjSize.value); }
+
+  function updatePropTag(preset) {
+    propTypeTag.textContent = preset.propLabel;
+    propTypeTag.className   = 'prop-type-tag ' + preset.prop;
+  }
+
+
+  // live-value インジケーター更新
+  function updateLiveValue(prop, r, objSize) {
+    let rows = [];
+    if (prop === 'pos') {
+      rows = [
+        { k: 'X', v: (r.tx ?? 0).toFixed(1) + ' px' },
+        { k: 'Y', v: (r.ty ?? 0).toFixed(1) + ' px' },
+      ];
+    } else if (prop === 'rot') {
+      rows = [{ k: '°', v: ((r.rot ?? 0) % 360).toFixed(2) + '°' }];
+    } else if (prop === 'scl') {
+      const scalePct = ((r.scale ?? 1) * 100).toFixed(1);
+      const scalePx  = Math.round(objSize * (r.scale ?? 1));
+      rows = [
+        { k: '%',  v: scalePct + '%' },
+        { k: 'px', v: scalePx + ' × ' + scalePx + ' px' },
+      ];
+    } else if (prop === 'opc') {
+      const opPct = ((r.opacity ?? 1) * 100).toFixed(1);
+      rows = [{ k: 'op', v: opPct + '%' }];
+    }
+    liveValueBox.innerHTML = rows.map(row =>
+      `<div class="live-value-row"><span class="live-value-key">${row.k}</span><span class="live-value-num">${row.v}</span></div>`
+    ).join('');
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // PRESET SELECT
+  // ─────────────────────────────────────────────────────────────
+  document.querySelectorAll('.preset-chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const key    = btn.dataset.key;
+      const preset = PRESETS[key];
+      if (!preset) return;
+      document.querySelectorAll('.preset-chip').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentKey = key;
+      activeTag.textContent = key.toUpperCase();
+      updatePropTag(preset);
+      startAnimation(key, buildFinalCode(preset.expr));
+    });
+  });
+
+  // ─────────────────────────────────────────────────────────────
+  // SLIDERS
+  // ─────────────────────────────────────────────────────────────
+  rSpeed.addEventListener('input', () => {
+    vSpeed.textContent = parseFloat(rSpeed.value).toFixed(1) + '×';
+    if (currentKey) refreshCode();
+  });
+  rIntensity.addEventListener('input', () => {
+    vIntensity.textContent = rIntensity.value;
+    if (currentKey) refreshCode();
+  });
+  rEase.addEventListener('input', () => {
+    vEase.textContent = EASE_LABELS[rEase.value] || rEase.value;
+    if (currentKey) refreshCode();
+  });
+
+  // Object size slider — コードに影響しない
+  rObjSize.addEventListener('input', () => {
+    const sz = parseInt(rObjSize.value);
+    vObjSize.textContent = sz + ' px';
+    previewTarget.style.width    = sz + 'px';
+    previewTarget.style.height   = sz + 'px';
+    // ◆はテキスト文字なのでfont-sizeも連動させる
+    previewTarget.style.fontSize = Math.round(sz * 0.55) + 'px';
+  });
+
+  function refreshCode() {
+    const preset = PRESETS[currentKey];
+    if (!preset) return;
+    codeOutput.value = buildFinalCode(preset.expr);
+    // アニメーションのstartTimeはリセットしない（スライダー変更は連続的）
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // CODE BUILD
+  // ─────────────────────────────────────────────────────────────
+  function buildFinalCode(expr) {
+    const spd = parseFloat(rSpeed.value).toFixed(2);
+    const amt = parseInt(rIntensity.value);
+    const eas = parseInt(rEase.value);
+    return `var spd = ${spd};\nvar amt = ${amt};\nvar eas = ${eas};\n\n${expr}`;
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // ANIMATION LOOP
+  // ─────────────────────────────────────────────────────────────
+  function startAnimation(key, code) {
+    if (animFrameId) cancelAnimationFrame(animFrameId);
+    codeOutput.value = code;
+    startTime = Date.now();
+
+    function frame() {
+      const spd = parseFloat(rSpeed.value);
+      const amt = parseInt(rIntensity.value);
+      const eas = parseInt(rEase.value);
+      // timeはAEと同じく「秒」
+      const time = (Date.now() - startTime) / 1000;
+
+      const r = evalPreview(key, time, spd, amt, eas);
+
+      const tx      = r.tx      ?? 0;
+      const ty      = r.ty      ?? 0;
+      const rot     = r.rot     ?? 0;
+      const scale   = r.scale   ?? 1;
+      const opacity = r.opacity ?? 1;
+
+      previewTarget.style.transform =
+        `translate(${tx.toFixed(2)}px, ${ty.toFixed(2)}px) rotate(${rot.toFixed(3)}deg) scale(${scale.toFixed(4)})`;
+      previewTarget.style.opacity = Math.max(0, Math.min(1, opacity)).toFixed(4);
+
+      // ライブ値インジケーター更新
+      const preset = PRESETS[key];
+      if (preset) updateLiveValue(preset.prop, r, getObjSize());
+
+      animFrameId = requestAnimationFrame(frame);
+    }
+    frame();
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // COPY
+  // ─────────────────────────────────────────────────────────────
+  btnCopy.addEventListener('click', () => {
+    const text = codeOutput.value;
+    if (!text) return;
+    navigator.clipboard.writeText(text).then(showToast).catch(() => {
+      codeOutput.select(); document.execCommand('copy'); showToast();
+    });
+  });
+
+  function showToast() {
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2200);
+  }
+});
+</script>
+</body>
+</html>
