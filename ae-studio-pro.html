@@ -196,9 +196,427 @@ input[type=range]::-webkit-slider-thumb:hover { background: var(--accent); trans
   pointer-events: none;
   z-index: 20;
 }
+
+/* ══════════════════════════════════════
+   MANUAL BUTTON + MODAL
+══════════════════════════════════════ */
+.btn-manual {
+  display: flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: transparent;
+  border: 1px solid var(--border-hi);
+  color: var(--text-mid);
+  font-family: 'Syne', sans-serif;
+  font-weight: 900; font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.18s;
+  flex-shrink: 0;
+}
+.btn-manual:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #080a0d;
+  transform: scale(1.1);
+}
+
+/* Overlay */
+.manual-overlay {
+  position: fixed; inset: 0; z-index: 500;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 2rem;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+.manual-overlay.open {
+  opacity: 1; pointer-events: all;
+}
+
+/* Modal */
+.manual-modal {
+  background: #0e1117;
+  border: 1px solid var(--border-hi);
+  border-radius: 24px;
+  width: 100%; max-width: 720px;
+  max-height: 82vh;
+  overflow-y: auto;
+  position: relative;
+  transform: translateY(24px) scale(0.97);
+  transition: transform 0.3s cubic-bezier(0.22,1,0.36,1);
+  box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+}
+.manual-overlay.open .manual-modal {
+  transform: translateY(0) scale(1);
+}
+
+/* Modal top shimmer */
+.manual-modal::before {
+  content: '';
+  position: absolute; top:0; left:0; right:0; height:1px;
+  background: linear-gradient(90deg, transparent, var(--border-hi), transparent);
+}
+
+.manual-modal-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1.4rem 1.8rem 1rem;
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 0;
+  background: #0e1117;
+  z-index: 10;
+}
+.manual-modal-title {
+  font-family: 'Syne', sans-serif;
+  font-weight: 900; font-size: 1.05rem;
+  letter-spacing: -0.02em; color: var(--text);
+}
+.manual-modal-title span { color: var(--accent); }
+
+.btn-manual-close {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--border-hi);
+  color: var(--text-mid); font-size: 1rem;
+  cursor: pointer; display: flex;
+  align-items: center; justify-content: center;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+.btn-manual-close:hover { background: #ff4d6d; border-color: #ff4d6d; color: white; }
+
+.manual-body { padding: 1.6rem 1.8rem 2rem; }
+
+/* STEP cards */
+.manual-steps {
+  display: flex; flex-direction: column; gap: 1px;
+  margin-bottom: 2rem;
+}
+
+.manual-step {
+  display: grid;
+  grid-template-columns: 48px 1fr;
+  gap: 0;
+  position: relative;
+}
+
+/* vertical line connector */
+.manual-step:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  left: 23px; top: 48px; bottom: -1px;
+  width: 2px;
+  background: linear-gradient(180deg, var(--border-hi), var(--border));
+}
+
+.step-num {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: rgba(200,241,53,0.08);
+  border: 1.5px solid rgba(200,241,53,0.25);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Syne', sans-serif; font-weight: 900;
+  font-size: 0.82rem; color: var(--accent);
+  flex-shrink: 0; margin-top: 2px;
+  position: relative; z-index: 1;
+}
+
+.step-content {
+  padding: 0 0 1.8rem 1rem;
+}
+.step-title {
+  font-family: 'Syne', sans-serif; font-weight: 800;
+  font-size: 0.88rem; letter-spacing: 0.01em;
+  color: var(--text); margin-bottom: 0.4rem;
+}
+.step-desc {
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 0.8rem; color: var(--text-mid);
+  line-height: 1.75;
+}
+.step-desc strong {
+  color: var(--accent); font-weight: 700;
+}
+.step-desc code {
+  font-family: 'Syne Mono', monospace;
+  font-size: 0.76rem; color: var(--accent);
+  background: rgba(200,241,53,0.08);
+  border: 1px solid rgba(200,241,53,0.18);
+  padding: 0.05rem 0.4rem; border-radius: 4px;
+}
+
+/* Preset reference table */
+.manual-section-title {
+  font-family: 'Syne', sans-serif; font-weight: 800;
+  font-size: 0.7rem; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--text-dim); margin-bottom: 1rem;
+  display: flex; align-items: center; gap: 0.6rem;
+}
+.manual-section-title::after {
+  content: ''; flex:1; height:1px; background: var(--border);
+}
+
+.preset-ref-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.6rem;
+  margin-bottom: 2rem;
+}
+
+.preset-ref-card {
+  background: rgba(255,255,255,0.025);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.75rem 0.9rem;
+  transition: border-color 0.15s;
+}
+.preset-ref-card:hover { border-color: var(--border-hi); }
+
+.prc-head {
+  display: flex; align-items: center; gap: 0.5rem;
+  margin-bottom: 0.35rem;
+}
+.prc-icon { font-size: 0.9rem; line-height: 1; }
+.prc-name {
+  font-family: 'Syne', sans-serif; font-weight: 800;
+  font-size: 0.76rem; color: var(--text);
+}
+.prc-prop {
+  font-family: 'Syne Mono', monospace;
+  font-size: 0.58rem; letter-spacing: 0.08em;
+  padding: 0.1rem 0.4rem; border-radius: 4px;
+  margin-left: auto;
+}
+.prc-prop.pos { color: #c8f135; background: rgba(200,241,53,0.08); border: 1px solid rgba(200,241,53,0.2); }
+.prc-prop.rot { color: #3dffd0; background: rgba(61,255,208,0.08); border: 1px solid rgba(61,255,208,0.2); }
+.prc-prop.scl { color: #b8a4ff; background: rgba(184,164,255,0.08); border: 1px solid rgba(184,164,255,0.2); }
+.prc-prop.opc { color: #ff9f6b; background: rgba(255,159,107,0.08); border: 1px solid rgba(255,159,107,0.2); }
+
+.prc-desc {
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 0.72rem; color: var(--text-mid); line-height: 1.6;
+}
+
+/* Slider reference */
+.slider-ref { margin-bottom: 2rem; display: flex; flex-direction: column; gap: 0.55rem; }
+.sref-row {
+  display: flex; align-items: flex-start; gap: 0.7rem;
+  background: rgba(255,255,255,0.025);
+  border: 1px solid var(--border);
+  border-radius: 10px; padding: 0.7rem 0.9rem;
+}
+.sref-name {
+  font-family: 'Syne', sans-serif; font-weight: 800;
+  font-size: 0.76rem; color: var(--accent);
+  min-width: 120px; flex-shrink: 0;
+}
+.sref-desc {
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 0.74rem; color: var(--text-mid); line-height: 1.65;
+}
+
+/* AE手順 */
+.ae-steps {
+  background: rgba(200,241,53,0.04);
+  border: 1px solid rgba(200,241,53,0.15);
+  border-radius: 14px;
+  padding: 1.1rem 1.3rem;
+}
+.ae-step-row {
+  display: flex; align-items: flex-start; gap: 0.7rem;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid rgba(200,241,53,0.08);
+}
+.ae-step-row:last-child { border-bottom: none; padding-bottom: 0; }
+.ae-step-num {
+  font-family: 'Syne Mono', monospace; font-size: 0.65rem;
+  color: var(--accent); min-width: 18px;
+}
+.ae-step-text {
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 0.78rem; color: var(--text-mid); line-height: 1.65;
+}
+.ae-step-text strong { color: var(--text); font-weight: 700; }
+.ae-step-text code {
+  font-family: 'Syne Mono', monospace; font-size: 0.73rem;
+  color: var(--accent); background: rgba(200,241,53,0.08);
+  border: 1px solid rgba(200,241,53,0.18);
+  padding: 0.05rem 0.38rem; border-radius: 4px;
+}
 </style>
 </head>
 <body>
+
+
+<!-- ══ MANUAL MODAL ══ -->
+<div class="manual-overlay" id="manual-overlay">
+  <div class="manual-modal">
+    <div class="manual-modal-head">
+      <div class="manual-modal-title">How to <span>Use</span></div>
+      <button class="btn-manual-close" id="btn-manual-close">✕</button>
+    </div>
+    <div class="manual-body">
+
+      <!-- STEP BY STEP -->
+      <div class="manual-section-title">基本の使い方</div>
+      <div class="manual-steps">
+        <div class="manual-step">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <div class="step-title">プリセットを選ぶ</div>
+            <div class="step-desc">
+              左パネルの <strong>Presets</strong> からお好みのモーションをクリックします。<br>
+              プリセットは4カテゴリ・14種類。選ぶと右側のプレビューがすぐ動き始めます。
+            </div>
+          </div>
+        </div>
+        <div class="manual-step">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            <div class="step-title">スライダーで動きを調整する</div>
+            <div class="step-desc">
+              <strong>Speed</strong>（速さ）・<strong>Intensity（強度）</strong>・<strong>Easing（緩急）</strong> の3つのスライダーで動きを細かく調整できます。<br>
+              変更するとコードにも即座に反映されます。
+            </div>
+          </div>
+        </div>
+        <div class="manual-step">
+          <div class="step-num">3</div>
+          <div class="step-content">
+            <div class="step-title">オブジェクトサイズを合わせる</div>
+            <div class="step-desc">
+              <strong>Preview Object Size</strong> スライダーで、AEで使う素材のサイズに近づけてみましょう。<br>
+              ※ このスライダーはコードには影響しません。あくまでプレビュー確認用です。
+            </div>
+          </div>
+        </div>
+        <div class="manual-step">
+          <div class="step-num">4</div>
+          <div class="step-content">
+            <div class="step-title">コードをコピーして After Effects に貼り付ける</div>
+            <div class="step-desc">
+              右下の <strong>Copy to AE</strong> ボタンを押してコードをコピー。<br>
+              プレビューの下に表示されているタグ（例：<code>Position</code>）が、AEで貼り付けるべきプロパティです。<br>
+              貼り付け先を間違えると正しく動かないので注意しましょう。
+            </div>
+          </div>
+        </div>
+        <div class="manual-step">
+          <div class="step-num">5</div>
+          <div class="step-content">
+            <div class="step-title">After Effects で適用する</div>
+            <div class="step-desc">下の「AEへの貼り付け手順」を参考に進めてください。</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AE手順 -->
+      <div class="manual-section-title">AEへの貼り付け手順</div>
+      <div class="ae-steps" style="margin-bottom:2rem;">
+        <div class="ae-step-row">
+          <span class="ae-step-num">01</span>
+          <span class="ae-step-text">AEでレイヤーを選択し、動かしたいプロパティ（例：<strong>Position</strong>）を表示する</span>
+        </div>
+        <div class="ae-step-row">
+          <span class="ae-step-num">02</span>
+          <span class="ae-step-text">プロパティ名の左にある <strong>ストップウォッチアイコン</strong> を <code>option</code>（Mac）/ <code>Alt</code>（Win）を押しながらクリック</span>
+        </div>
+        <div class="ae-step-row">
+          <span class="ae-step-num">03</span>
+          <span class="ae-step-text">エクスプレッション入力欄が開くので、<strong>全選択（⌘A / Ctrl+A）</strong> してからコードを貼り付け（⌘V / Ctrl+V）</span>
+        </div>
+        <div class="ae-step-row">
+          <span class="ae-step-num">04</span>
+          <span class="ae-step-text">エクスプレッション欄の外をクリックして確定。エラーが出る場合は貼り付け先のプロパティが間違っています</span>
+        </div>
+      </div>
+
+      <!-- PRESET一覧 -->
+      <div class="manual-section-title">プリセット一覧</div>
+      <div class="preset-ref-grid">
+        <div class="preset-ref-card">
+          <div class="prc-head"><span class="prc-icon">🌊</span><span class="prc-name">Wiggle</span><span class="prc-prop pos">Position</span></div>
+          <div class="prc-desc">ランダムにゆらゆら揺れる。一番よく使うエクスプレッション。</div>
+        </div>
+        <div class="preset-ref-card">
+          <div class="prc-head"><span class="prc-icon">🎈</span><span class="prc-name">Float</span><span class="prc-prop pos">Position</span></div>
+          <div class="prc-desc">上下にゆっくり浮かぶ。ふわふわした演出に。</div>
+        </div>
+        <div class="preset-ref-card">
+          <div class="prc-head"><span class="prc-icon">⚡</span><span class="prc-name">Shake</span><span class="prc-prop pos">Position</span></div>
+          <div class="prc-desc">激しく細かく震える。衝撃・インパクト演出に。</div>
+        </div>
+        <div class="preset-ref-card">
+          <div class="prc-head"><span class="prc-icon">🕰</span><span class="prc-name">Pendulum</span><span class="prc-prop pos">Position</span></div>
+          <div class="prc-desc">振り子のような弧を描く移動。</div>
+        </div>
+        <div class="preset-ref-card">
+          <div class="prc-head"><span class="prc-icon">🌀</span><span class="prc-name">Spin</span><span class="prc-prop rot">Rotation</span></div>
+          <div class="prc-desc">一定速度でくるくる回転し続ける。</div>
+        </div>
+        <div class="preset-ref-card">
+          <div class="prc-head"><span class="prc-icon">〰</span><span class="prc-name">Wobble</span><span class="prc-prop rot">Rotation</span></div>
+          <div class="prc-desc">左右に揺れる回転。くねくねした動きに。</div>
+        </div>
+        <div class="preset-ref-card">
+          <div class="prc-head"><span class="prc-icon">⏱</span><span class="prc-name">Tick</span><span class="prc-prop rot">Rotation</span></div>
+          <div class="prc-desc">時計の秒針のようにカクカク進む回転。</div>
+        </div>
+        <div class="preset-ref-card">
+          <div class="prc-head"><span class="prc-icon">🎪</span><span class="prc-name">Swing</span><span class="prc-prop rot">Rotation</span></div>
+          <div class="prc-desc">振り子のように揺れてだんだん減衰する回転。</div>
+        </div>
+        <div class="preset-ref-card">
+          <div class="prc-head"><span class="prc-icon">💓</span><span class="prc-name">Breathe</span><span class="prc-prop scl">Scale</span></div>
+          <div class="prc-desc">呼吸するようにじんわり拡縮する。</div>
+        </div>
+        <div class="preset-ref-card">
+          <div class="prc-head"><span class="prc-icon">📡</span><span class="prc-name">Pulse</span><span class="prc-prop scl">Scale</span></div>
+          <div class="prc-desc">鼓動のように膨らんでは戻る。</div>
+        </div>
+        <div class="preset-ref-card">
+          <div class="prc-head"><span class="prc-icon">●</span><span class="prc-name">Bounce</span><span class="prc-prop scl">Scale</span></div>
+          <div class="prc-desc">バウンドするような弾む拡縮。</div>
+        </div>
+        <div class="preset-ref-card">
+          <div class="prc-head"><span class="prc-icon">✦</span><span class="prc-name">Pop</span><span class="prc-prop scl">Scale</span></div>
+          <div class="prc-desc">急に大きくなってゆっくり戻るリピート。強調演出に。</div>
+        </div>
+        <div class="preset-ref-card">
+          <div class="prc-head"><span class="prc-icon">✨</span><span class="prc-name">Blink</span><span class="prc-prop opc">Opacity</span></div>
+          <div class="prc-desc">一定間隔で点滅する。</div>
+        </div>
+        <div class="preset-ref-card">
+          <div class="prc-head"><span class="prc-icon">🕯</span><span class="prc-name">Flicker</span><span class="prc-prop opc">Opacity</span></div>
+          <div class="prc-desc">ランダムにちらつく。ろうそく・ホラー演出に。</div>
+        </div>
+      </div>
+
+      <!-- スライダー解説 -->
+      <div class="manual-section-title">スライダーの意味</div>
+      <div class="slider-ref">
+        <div class="sref-row">
+          <span class="sref-name">Speed（速さ）</span>
+          <span class="sref-desc">動きの速度を変えます。数値が大きいほど速くなります。<br>デフォルト：1.0×　推奨範囲：0.5〜3.0</span>
+        </div>
+        <div class="sref-row">
+          <span class="sref-name">Intensity（強度）</span>
+          <span class="sref-desc">動きの大きさ・振れ幅を変えます。大きいほど派手に動きます。<br>デフォルト：50　推奨範囲：20〜100</span>
+        </div>
+        <div class="sref-row">
+          <span class="sref-name">Easing（緩急）</span>
+          <span class="sref-desc">動きのなめらかさを変えます。数値が大きいほどクセが強くなります。コードには定義されますが、プリセットによっては直接影響しない場合もあります。<br>デフォルト：Smooth</span>
+        </div>
+        <div class="sref-row">
+          <span class="sref-name">Object Size</span>
+          <span class="sref-desc">プレビューのオブジェクトサイズを変えます。<strong>コードには影響しません。</strong> AEで使う素材のサイズに合わせてイメージを確認するためのものです。</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
 
 <div id="toast" class="toast">Copied ✦</div>
 
@@ -215,6 +633,8 @@ input[type=range]::-webkit-slider-thumb:hover { background: var(--accent); trans
       <span style="font-family:'Syne Mono',monospace;font-size:0.6rem;color:var(--text-dim);letter-spacing:0.08em;border-left:1px solid var(--border-hi);padding-left:0.8rem;margin-left:0.2rem;">
         Created by <a href="https://x.com/itokuniapp" target="_blank" style="color:var(--accent);text-decoration:none;font-weight:700;letter-spacing:0.04em;">itokuni</a>
       </span>
+      &nbsp;
+      <button class="btn-manual" id="btn-manual" title="使い方を見る">?</button>
     </div>
   </header>
 
@@ -701,6 +1121,19 @@ document.addEventListener('DOMContentLoaded', () => {
     toast.classList.add('show');
     setTimeout(() => toast.classList.remove('show'), 2200);
   }
+
+  // ── Manual modal ──
+  const overlay      = document.getElementById('manual-overlay');
+  const btnManual    = document.getElementById('btn-manual');
+  const btnManualClose = document.getElementById('btn-manual-close');
+
+  function openManual()  { overlay.classList.add('open'); document.body.style.overflow = 'hidden'; }
+  function closeManual() { overlay.classList.remove('open'); document.body.style.overflow = ''; }
+
+  btnManual.addEventListener('click', openManual);
+  btnManualClose.addEventListener('click', closeManual);
+  overlay.addEventListener('click', e => { if (e.target === overlay) closeManual(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeManual(); });
 });
 </script>
 </body>
